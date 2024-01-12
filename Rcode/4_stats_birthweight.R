@@ -5,7 +5,7 @@
 #
 # Purpose: This script is used to run the models for pup birth weight.
 #
-# Date: 2023-12-03
+# Date: 2024-01-11
 # -----------------------------------------------------------
 
 
@@ -45,7 +45,7 @@ m1birthmass <- lm(Pup_BirthWeight ~ sMLH_msat39_pup
                   + sMLH_msat39_mum
                   + Mum_Age,
                   # + (1 | uniqueID_mum), # including mother ID as a random effect did not change the results significantly and the model was a poorer fit
-                  # In addition, adding mother ID as random effect may make it problematic as sMLH mum would be a comfounding factor.
+                  # In addition, adding mother ID as random effect may make it problematic as sMLH mum would be a confounding factor.
                   data = pup_data)
 
 summary(m1birthmass) 
@@ -144,48 +144,3 @@ webshot::webshot(here("Tables", "Table_BW_full_model_vs_no_mat_NEW.html"),
                  file=here("Tables", "Table_BW_full_model_vs_no_mat_NEW.png"), delay=2, vheight = 450, vwidth = 700)
 
 ##---- chunk_end
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-#  The same models but for female pups only  ####
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-
-# Still to fine tune, if asked for
-
-#~~ Filter df to keep only female pups
-females <- pup_data %>% filter(Pup_Sex == "F")
-
-#~~ Birth mass model incl maternal effects, female pups only
-m1birthmass.f <- lm(Pup_BirthWeight ~ sMLH_msat39_pup
-                    #+ Pup_Sex
-                    + Year
-                    + sMLH_msat39_mum
-                    + Mum_Age
-                    #+ (1 | uniqueID_mum),
-                    data = females)
-
-summary(m1birthmass.f)
-
-#~~ Model assumptions
-testDispersion(m1birthmass.f)
-plotQQunif(m1birthmass.f)
-plotResiduals(m1birthmass.f)
-
-#~~ Save model
-saveRDS(m1birthmass.f, file = here("Data", "Processed", "m1_birthmass_females.rds"))
-
-#~~ Birth mass model excl maternal effects, female pups only
-m2birthmass.f <- lm(Pup_BirthWeight ~ sMLH_msat39_pup
-                    #+ Pup_Sex
-                    + Year,
-                    data = females)
-
-summary(m2birthmass.f)
-
-#~~ Model assumptions
-testDispersion(m2birthmass.f)
-plotQQunif(m2birthmass.f)
-plotResiduals(m2birthmass.f)
-
-#~~ Save model
-saveRDS(m2birthmass.f, file = here("Data", "Processed", "m2_birthmass_females.rds"))

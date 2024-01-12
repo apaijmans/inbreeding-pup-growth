@@ -9,7 +9,7 @@
 # and foraging trip duration, as well as a figure with the map of
 # South Georgia and Bird Island.
 #
-# Date: 2023-12-01
+# Date: 2023-12-19
 # -----------------------------------------------------------
 
 
@@ -70,7 +70,7 @@ p_a <- ggplot(seasonal_data %>% filter(variable=="SSB ESTIMATED NUMBER OF FEMALE
 p_breeders <-  ggplot(seasonal_data%>% filter(variable=="SSB ESTIMATED NUMBER OF FEMALE BREEDERS"), 
                       aes(x = season, y = mean)) + 
   geom_pointrange(aes(ymin = CI95_low, ymax = CI95_high)) +
-  geom_point(shape = 22, size = 4, fill = "#ea4f88") +
+  geom_point(shape = 22, size = 4, fill = "dimgrey") +
   labs(title="(b) Female breeders", x= "Year", y="No. of breeders") +
   gglayer_theme
 
@@ -78,7 +78,7 @@ p_breeders <-  ggplot(seasonal_data%>% filter(variable=="SSB ESTIMATED NUMBER OF
 p_bm <-  ggplot(seasonal_data%>% filter(variable=="SSB FEMALE PUP BIRTH MASS (kg)"), 
                 aes(x = season, y = mean)) + 
   geom_pointrange(aes(ymin = CI95_low, ymax = CI95_high)) +
-  geom_point(shape = 22, size = 4, fill = "#4b2991") +
+  geom_point(shape = 22, size = 4, fill = "dimgrey") +
   labs(title="(c) Female pup birth mass", x= "Year", y="Birth mass (kg)") +
   gglayer_theme
 
@@ -86,7 +86,7 @@ p_bm <-  ggplot(seasonal_data%>% filter(variable=="SSB FEMALE PUP BIRTH MASS (kg
 p_foraging <-  ggplot(seasonal_data %>% filter(variable=="FWB FEMALE FORAGING TRIP DURATION (days)"), 
                       aes(x = season, y = mean)) + 
   geom_pointrange(aes(ymin = CI95_low, ymax = CI95_high)) +
-  geom_point(shape = 22, size = 4, fill = "#f6a97a") +
+  geom_point(shape = 22, size = 4, fill = "dimgrey") +
   labs(title="(d) Female foraging trip duration", x="Year", y="Time at sea (days)") +
   gglayer_theme
 
@@ -109,7 +109,7 @@ fwb <- st_read(here("Rcode", "Bird Island Map", "beachs", "FWB.kml", "doc.kml"),
 
 #### mapping bird island ----
 plot.bi.color <- ggplot() + 
-  geom_sf(data = bi_coast, fill = "#ADADAD") + 
+  geom_sf(data = bi_coast, fill = "dimgrey") +  #"#ADADAD"
   #geom_sf(data = bi_r, color = "blue") + 
   #geom_sf(data = bi_c) + 
   geom_sf(data=ssb, fill = "#872ca2") + #ssb
@@ -131,7 +131,7 @@ plot.bi.color. <- plot.bi.color +
 # Adds beach location in color
 plot.bi.beaches.color <- ggplot() + 
   geom_sf(data = bi_coast, fill = "NA") + 
-  geom_sf(data = bi_coast, fill = "#D4CEC2") +  # "#eaeaea"
+  geom_sf(data = bi_coast, fill = "#ADADAD") +  # "#eaeaea"
   geom_sf(data = fwb, fill = "#fa7876") + 
   geom_sf(data = ssb, fill = "#872ca2") +
   theme(legend.position = "none") +

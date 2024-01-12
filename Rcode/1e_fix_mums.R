@@ -6,7 +6,7 @@
 # Purpose: This script removes mum-pup pairs that are not a genetic match 
 # according to the NEWPAT maternity analysis from the growth dataframe
 #
-# Date: 2023-11-30
+# Date: 2023-12-03
 # -----------------------------------------------------------
 
 

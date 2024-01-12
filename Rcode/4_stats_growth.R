@@ -5,7 +5,7 @@
 #
 # Purpose: This script is used to run the models for pup weight gain.
 #
-# Date: 2023-12-03
+# Date: 2024-01-11
 # -----------------------------------------------------------
 
 
@@ -55,7 +55,7 @@ m1growth <- lm(WeightGain ~ sMLH_msat39_pup
                + Year 
                + sMLH_msat39_mum
                + Mum_Age,
-               #+ (1 | uniqueID_mum), # including mother ID as a random effect did not change the results significantly, and might be comfounded with mum sMLH
+               #+ (1 | uniqueID_mum), # including mother ID as a random effect did not change the results significantly, and might be confounded with mum sMLH
                data = pup_alife)
 
 summary(m1growth)
@@ -142,55 +142,3 @@ webshot::webshot(here("Tables", "Table_growth_full_model_vs_no_mat_NEW.html"),
                  file=here("Tables", "Table_growth_full_model_vs_no_mat_NEW.png"), delay=2, vheight = 450, vwidth = 700)
 
 ##---- chunk_end
-
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-#  The same models but for female pups only  ####
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-
-#~~ Filter df to keep only female pups
-females <- pup_alife %>% filter(Pup_Sex == "F")
-
-#~~ Weight gain incl maternal effects, female pups only
-m1growth.f <- lmerTest::lmer(WeightGain ~ sMLH_msat39_pup
-                             #+ Pup_Sex
-                             + Pup_BirthWeight
-                             + Age_Tag
-                             + Year 
-                             + sMLH_msat39_mum
-                             + Mum_Age
-                             + (1 | uniqueID_mum),
-                             data = females)
-
-isSingular(m1growth.f) # TRUE
-# Problem with singularity. Maybe the sample size is on the small hand to fit such a complex model?
-# Not sure yet how to fix...
-
-summary(m1growth.f)
-
-#~~ Model assumptions
-testDispersion(m1growth.f)
-plotQQunif(m1growth.f)
-plotResiduals(m1growth.f)
-
-# #~~ Save model
-# saveRDS(m1growth.f, file = here("Data", "Processed", "m1_growth_females.rds"))
-
-#~~ Weight gain excl maternal effects, female pups only
-m2growth.f <- lm(WeightGain ~ sMLH_msat39_pup
-                 #+ Pup_Sex
-                 + Pup_BirthWeight 
-                 + Age_Tag
-                 + Year, 
-                 data = females)
-
-summary(m2growth.f)
-
-#~~ Model assumptions
-testDispersion(m2growth.f)
-plotQQunif(m2growth.f)
-plotResiduals(m2growth.f)
-
-#~~ Save model
-saveRDS(m2growth.f, file = here("Data", "Processed", "m2_growth_females.rds"))

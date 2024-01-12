@@ -41,7 +41,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ***
 
-This document contains all the `R code` used in the workflow for the manuscript *Little evidence for inbreeding depression for birth mass, survival and growth in Antarctic fur seal pups* by Anneke J. Paijmans, Ane Liv Berthelsen, Rebecca Nagel, Felicitas Cristaller, Nicole Kröcker, Jaume Forcada, and Joseph I. Hoffman. The R Markdown file and the raw data can all be downloaded via Zenodo, *LINK*. Additional scrips are available on Github, *LINK*. Please, don't hesitate to contact me if you have any questions: a.paijmans[@]uni-bielefeld.de.
+This document contains all the `R code` used in the workflow for the manuscript *Little evidence for inbreeding depression for birth mass, survival and growth in Antarctic fur seal pups* by Anneke J. Paijmans, Ane Liv Berthelsen, Rebecca Nagel, Felicitas Cristaller, Nicole Kröcker, Jaume Forcada, and Joseph I. Hoffman. The R Markdown file and the raw data can all be downloaded via Zenodo, *LINK*. Additional scrips are available on Github, https://github.com/apaijmans/inbreeding-pup-growth/. Please, don't hesitate to contact me if you have any questions: a.paijmans[@]uni-bielefeld.de.
 
 ***
 
@@ -58,7 +58,6 @@ packages <- c("here",
               "sjPlot", 
               "cowplot",
               "ggtext",
-              #"scales",
               "nlme",
               "car",
               "AICcmodavg",
@@ -84,11 +83,13 @@ invisible(lapply(packages, library, character.only = TRUE))
 
 
 # Microsatellite dataset
-  
-Before starting the analysis, mother-pup pairs were checked for genetic matching using the excel NEWPAT macro. The genotypes of pairs with a maximum of 3 mismatching loci were visually inspected. If a scoring mistake was identified, the genotype was corrected. The maternity analysis was then rerun on the updated microsatellite data. Mother-pup pairs with fewer than 2 mismatching loci were considered a genetic match.
 
-Preparing the files for the maternity analysis and postprocessing of the results were done in separate R scripts. These scripts and the NEWPAT excel macro files can be found on github **LINK**.
+## Maternity check  
+Before starting the analysis, mother-pup pairs were checked for genetic matching using the excel NEWPAT macro. The genotypes of pairs with a maximum of 3 mismatching loci were visually inspected. If a scoring mistake was identified, the genotype was corrected. The maternity analysis was then rerun on the updated microsatellite data. Mother-pup pairs with a maximum of 1 mismatching loci were considered a genetic match.
 
+Preparing the files for the maternity analysis and postprocessing of the results were done in separate R scripts. These scripts and the NEWPAT excel macro files can be found on [Github](https://github.com/apaijmans/inbreeding-pup-growth/tree/main/Rcode); scripts 1a-1e.
+
+## Data preparation
 First, we load the fitness data including the results of the maternity analysis, and the microsatellite data for all our individuals in two separate dataframes.
 
 ```{r, include=FALSE, cache=FALSE}
@@ -135,7 +136,7 @@ Making sure all variables have the right categories
 
 # SNP dataset
 
-Datasets for birth weight, survival and repeated measures growth analysis. Scripts for SNP data filtering, calculating sMLH and F~ROH~ are available on github **LINK**.
+Datasets for birth weight, survival and repeated measures growth analysis. Scripts for [SNP data filtering](https://github.com/apaijmans/inbreeding-pup-growth/blob/main/Server/update_PLINK_files.R), [calling ROH and calculating *F*~ROH~](https://github.com/apaijmans/inbreeding-pup-growth/blob/main/Server/call_ROH.R) are available on Github.
 
 ```{r}
 
@@ -166,7 +167,7 @@ SurvivorsRM_Day60 <- subset(DataRM_Day60, DataRM_Day60$Death == 'N' &
 
 
 # Variance in inbreeding
-To explore the variance in inbreeding, we also calculated *g~2~* (n permumations = 1000, n bootstraps = 1000). Since the *g~2~* calculations can take some time, we calculated it once, stored it as a Gdata object and load the data from the saved object. The code to calculate the *g~2~* can be found on Github **LINK**, as well as the resulting Rdata objects.
+To explore the variance in inbreeding, we calculated *g~2~* (n permumations = 1000, n bootstraps = 1000). Since the *g~2~* calculations can take some time, we calculated it once, stored it as a Gdata object and load the data from the saved object. The code to calculate the *g~2~* can be found on Github for the [microsatellites](https://github.com/apaijmans/inbreeding-pup-growth/blob/main/Rcode/2_calculate_sMLH.R) and [SNP data](https://github.com/apaijmans/inbreeding-pup-growth/blob/main/Server/calculate_g2.R), as well as the resulting [Rdata objects.](https://github.com/apaijmans/inbreeding-pup-growth/tree/main/Data/Processed)
 
 ```{r, g2_msats}
 ```
@@ -183,7 +184,8 @@ We then plotted the bootstrapped *g~2~* values for both the microsatellite data 
 
 ## Microsatellite dataset: pup birth mass
 We tested for an effect of individual or maternal heterozygosity (sMLH) on pup birth mass with a linear model. Pup and maternal sMLH were included as continuous variables. Covariates were pup sex and year (as factors) and mother age (as continuous variable) (see [Model 1](#model-1-excluding-maternal-effects)).
-To make use of a bigger sample size (including pups with known and unknown mothers) we ran the same model while excluding maternal effects (see [Model 2](#model-2-excluding-maternal-effects)). The results were not significantly different (see [parameter estimates](#parameter-estimates-pup-birth-mass-models))).
+
+To make use of a bigger sample size (including pups with known and unknown mothers) we ran the same model while excluding maternal effects (see [Model 2](#model-2-excluding-maternal-effects)). The results for the predictors of main interest (pup sMLH/mum sMLH) did not differ (see [parameter estimates](#parameter-estimates-pup-birth-mass-models))). In the model without maternal effects there seemed to be a year effect for 2020 and 2021 that was not present in the model including maternal effects.
 
 ### Model 1: including maternal effects
 
@@ -191,7 +193,7 @@ To make use of a bigger sample size (including pups with known and unknown mothe
 ```
 
 ### Residual check of model
-We used the DHARMa package to check three model assumptions: the first figure shows a test for under/overdispersion, the second figure, a QQplot, checks for normality, and the third figure, residuals versus the predictions, allows to check for issues with linearity and equality of error variances. 
+We used the DHARMa package to check three model assumptions: the first figure shows a test for under/overdispersion, the second figure, a QQplot, checks for normality, and the third figure, residuals versus the predictions, allows to check for issues with linearity and equality of error variances. Since the outlier test was significant (meaning that the simulated values are higher or lower than the observed data), we investigated these in the fourth figure. 
 ```{r, m1_BM_assumptions, fig.show="hold", out.width="50%"}
 ```
 
@@ -207,13 +209,14 @@ We used the DHARMa package to check three model assumptions: the first figure sh
 
 ### Parameter estimates pup birth mass models
 Parameter estimates from: (a) the linear model including maternal genetic diversity (mother sMLH) and mother age, and (b) the linear model excluding maternal effects. Estimates are shown together with confidence intervals (CI), significant *p*-values are in bold. For both models, total number of observations, as well as the variance explained by the predictors (R^2^) and variance adjusted for the number of predictors (R^2^ adjusted) are reported.
-The results of the model including maternal effect (a) compared to the results of the model excluding maternal effects (b) are very similar, even though the sample size is more than double (342 vs. 884, respectively).
+The results of the model including maternal effect (a) compared to the results of the model excluding maternal effects (b) are very similar, even though the sample size is more than double (`r nobs(m1birthmass)` vs. `r nobs(m2birthmass)`, respectively).
 ```{r, BM_table}
 ```
 
 ## Microsatellite dataset: survival
-Here, we tested for an effect of individual or maternal heterozygosity on pup survival with a generalized linear model (GLM) with a binomial error structure. Survival ( 1 = survived and 0 = dead) was included as a factor, pup and maternal sMLH were included as continuous variables. Also in this model the addition covariates were pup sex, year (as factors) and mother age (as continuous variable) (see [Model 1](#model-1-excluding-maternal-effects-1)).
-Again, we compared the results with the results generated by running the same model on the bigger dataset (including pups with known and unknown mothers) while excluding maternal effects (see [Model 2](#model-2-excluding-maternal-effects-1)). The results were not significantly different (see [parameter estimates](#parameter-estimates-pup-survival-mass-models))), although in the model without maternal effects there seemed to be a year effect that was not present in the model including maternal effects. Pups were more likely to survive in 2019 compared to 2018 but less likely to survive in 2021 compared to 2018.
+Here, we tested for an effect of individual or maternal heterozygosity on pup survival with a generalized linear model (GLM) with a binomial error structure. Survival ( 1 = survived and 0 = dead) was included as a factor, pup and maternal sMLH were included as continuous variables. Also in this model the additional covariates were pup sex, year (as factors) and mother age (as continuous variable) (see [Model 1](#model-1-excluding-maternal-effects-1)).
+
+Again, we compared the results with the results generated by running the same model on the bigger dataset (including pups with known and unknown mothers) while excluding maternal effects (see [Model 2](#model-2-excluding-maternal-effects-1)). The results for the predictors of main interest (pup sMLH/mum sMLH) did not differ (see [parameter estimates](#parameter-estimates-pup-survival-mass-models))). In the model without maternal effects there seemed to be a year effect that was not present in the model including maternal effects. Pups were more likely to survive in 2019 compared to 2018 but less likely to survive in 2021 compared to 2018.
 
 ### Model 1: including maternal effects
 ```{r, m1_survival}
@@ -232,18 +235,18 @@ Again, we compared the results with the results generated by running the same mo
 ```
 
 ### Parameter estimates pup survival models
-Parameter estimates from: (a) the GLM with a binomial error distribution including maternal genetic diversity, and (b) excluding maternal effects. Log-Odd ratios are shown together with confidence intervals (CI), significant *p*-values are in bold. Total number of observations, as well as the variance explained (R2 Tjur) are reported for both models.
-The results of the model including maternal effect (a) compared to the results of the model excluding maternal effects (b) are very similar, even though the sample size is more than double (342 vs. 884, respectively).
+Parameter estimates from: (a) the GLM with a binomial error distribution including maternal genetic diversity, and (b) excluding maternal effects. Log-Odd ratios are shown together with confidence intervals (CI), significant *p*-values are in bold. Total number of observations, as well as the variance explained (R^2^ Tjur) are reported for both models.
+The results of the model including maternal effect (a) compared to the results of the model excluding maternal effects (b) are very similar, even though the sample size is more than double (`r nobs(m1survival)` vs. `r nobs(m2survival)`, respectively).
 ```{r, survival_table}
 ```
 
 
 ## Microsatellite dataset: pup growth
-In order to test for weight gain, the data needs to be filtered to include only surviving pups (for most pups that did not survive, a second weight was not taken, and therefore weight gain could not be calculated).
+Pup growth was defined as the difference in weight between birth and recapture. Pups that did not survive the first months were not recaptured, meaning weight at recapture was not available for these pups and growth could not be calculated. Because of this, we filtered the data to include only surviving pups.
 
-We then tested for an effect of individual or maternal heterozygosity on pup survival with a linear model. Growth (difference in weight between birth and recapture) was included as a continuous variable. Addition covariates were pup age (number of days between birth and recapture), pup sex, year and mother age (see [Model 1](#model-1-excluding-maternal-effects-2)). 
+We then tested for an effect of individual or maternal heterozygosity on pup survival with a linear model. Growth was included as a continuous variable. Addition covariates were pup age (number of days between birth and recapture), pup sex, year and mother age (see [Model 1](#model-1-excluding-maternal-effects-2)). 
 
-Again, here we compared the results with the results generated by running the same model on the bigger dataset (including pups with known and unknown mothers) while excluding maternal effects (see [Model 2](#model-2-excluding-maternal-effects-2)). The results were comparable between the two models (see [parameter estimates](#parameter-estimates-pup-growth-models))), although in the model without maternal effects there seemed to be an effect of both pup sex and birth mass, where males gained more weight than females and pups that were born heavier also gained more weight. In the model with maternal effect, these effects were not present, however, we find here a small significant effect of pup sMLH, which is not present in the model without maternal effects.
+Again, here we compared the results with the results generated by running the same model on the bigger dataset (including pups with known and unknown mothers) while excluding maternal effects (see [Model 2](#model-2-excluding-maternal-effects-2)). The results were comparable between the two models (see [parameter estimates](#parameter-estimates-pup-growth-models))), although we found a significant effect of pup sMLH in the model with maternal effect, which is not present in the model without maternal effects. In the model without maternal effects there was an effect of pup birth mass, where pups that were born heavier also gained more weight, however, this effect was absent in the model with maternal effects.
 ```{r, growth_filter}
 ```
 
@@ -464,9 +467,6 @@ shapiro.test(SurvivorsRM_Day60$Weight_kg) #the shapiro-wilk test tests for norma
 #SurvivorsRM_Day60$Weight_kg_scale <- scale(SurvivorsRM_Day60$Weight_kg)
 SurvivorsRM_Day60$Age_Days_scale <- scale(SurvivorsRM_Day60$Age_Days)
 
-#shapiro.test(log(SurvivorsRM_Day60$Weight_kg)) #a log transformation could handle this, if needed
-#however, GLM with appropriate data distribution or nonlinear models like logistic and gompertz are also a good way to solve this.
-SurvivorsRM_Day60$Weight_kg_log <- log(SurvivorsRM_Day60$Weight_kg)
 ```
 ```{r}
 weight_over_time <- ggplot(SurvivorsRM_Day60, aes(x = Age_Days, y = Weight_kg)) +
@@ -479,62 +479,10 @@ weight_over_time <- ggplot(SurvivorsRM_Day60, aes(x = Age_Days, y = Weight_kg)) 
 #plots
 plot_grid(weight_raw, weight_over_time, labels = "AUTO", label_size = 12)
 ```
-Based on both visual inspection and the Shapiro-Wilk test, the weight data does not follow a normal distribution but is slightly right-skewed. The weight data follows a Gamma distribution and will be modeled as such. 
-
-### Repeated measures growth curve models
-For the models with repeated measures, a random effects term 'ID' is added to inform the model that some observations are clustered within the same individual. The base is built around a generalized linear mixed-effects model (GLMM) to account for the repeated measures and the right-skewed data. The Gamma(link = "log") data distribution ensures that the predicted values are positive.  
-```{r}
-#unconditional means model aka null model (no predictors)
-RM0 <- lmer(Weight_kg_log ~ 1 + (1 | ID), 
-             data = SurvivorsRM_Day60, 
-             REML = F)
-#summary(RM0)
-
-#growth varying per day, each individual has different intercepts, but the same slope
-RM <- lmer(Weight_kg_log ~ Age_Days_scale + (1 | ID), 
-            data = SurvivorsRM_Day60, 
-            REML = F)
-#summary(RM)
-
-#growth varying per day, each individual has different slopes ((Age_Days | ID))
-RM1 <- lmer(Weight_kg_log ~ Age_Days_scale + (Age_Days_scale - 1 | ID), 
-             data = SurvivorsRM_Day60, 
-             REML = F)
-#summary(RM1)
-
-#growth varying per day, both intercept and slope vary per individual
-RM2 <- lmer(Weight_kg_log ~ Age_Days_scale + (1 + Age_Days_scale | ID), 
-             data = SurvivorsRM_Day60, 
-             REML = F)
-#summary(RM2)
-
-#explanation: Fixed effects estimate: Intercept is average birth weight 
-                                    # Age_Days is one day change in weight
-            # Random effects: associated variance
-            # Intercept: how much variance in birth weight between pups
-            # Age_Days: difference in slope. 0.00060 might not sound as much
-            # Corr: the correlation between the slope and intercept: 0.36 
-            # it's positive, which indicates that pups with higher intercept
-            # on average has a steeper slope as well. 
-            # Residual: 0.5593029. Refers to the variance not explained by the variables in the model
-            # additionally, looking at confint(RM2), the confidence interval
-            # for the intercept and for the Age_Days does not cross 0. 
-#ICC = repeatability of weight across individuals
-
-models <- list(RM0, RM, RM1, RM2)
-mod.names <- c('null-model', 'intercept', 'slope', 'i+s')
-AIC_model_structure <- aictab(cand.set = models, modnames = mod.names)
-AIC_model_structure
-#the RM2 model, which allows both intercept and slope to vary per individual performs best. 
-#testDispersion(RM2)
-#plotQQunif(RM2)
-
-#clean up
-rm(RM0, RM1, RM, models, mod.names)
-```
+Based on both visual inspection and the shapiro-wilk test, the weight data does not follow a normal distribution but is slightly right-skewed.
 
 ### Exploration of growth curve fit
-We can explore other growth curves. 
+We can explore different growth curves. 
 In the larger dataset birth weight ranges from 2.45 to 7.7 kg and weight at day 60 from 6.5 to 14.6 kg. In this dataset with repeated measures, lowest birth weight is 4.2 and highest last weight is 16.3.
 ```{r}
 #For the logistic and gompertz models, the parameters K, r and t are used to fit the model:
@@ -558,11 +506,9 @@ gompertz.model <- nls(Weight_kg ~ K * exp(-exp(-r * (Age_Days - t))),
 #b is the birth weight, here set at 2.45kg, as lightest measured pup was 2.45kg.
 
 #Linear
-linear.model <- nls(Weight_kg ~ a * Age_Days +b, 
+linear.model <- nls(Weight_kg ~ a * Age_Days + b, 
                     data = SurvivorsRM_Day60, 
                     start = list(a = 0.080821, b = 2.45))
-
-                    
 
 # Compare the models using AIC 
 models.1 <- list(linear.model, logistic.model, gompertz.model)
@@ -591,63 +537,6 @@ rm(linear.model, logistic.model, gompertz.model, models.1, mod.names.1)
 ```
 The different growth curves all lie within a delta AIC of 2, which means the general difference between the fit of the different growth curves to the data is not strong. Therefore, we proceed with the linear model structure. 
 
-### Model: repeated measures
-Now that we have determined the base structure of the repeated measures model, we can add more explanatory variables. 
-
-```{r}
-#without scaled continuous variables, this will not work
-SurvivorsRM_Day60$sMLH_SNP.new_scale <- scale(SurvivorsRM_Day60$sMLH_SNP.new)
-SurvivorsRM_Day60$sMLH_SNP.new_mum_scale <- scale(SurvivorsRM_Day60$sMLH_SNP.new_mum)
-SurvivorsRM_Day60$froh_scale <- scale(SurvivorsRM_Day60$froh)
-SurvivorsRM_Day60$froh_mum_scale <- scale(SurvivorsRM_Day60$froh_mum)
-
-# Calculate the correlation matrix for numeric variables
-cor_matrix <- cor(SurvivorsRM_Day60[, c("Age_Days_scale", "sMLH_SNP.new_scale", "sMLH_SNP.new_mum_scale")], use = "pairwise.complete.obs")
-eigenvalues <- eigen(cor_matrix)$values
-#the eigenvalues are close to 1, which indicate some level of collinearity, but not enough to create a considerable effect
-
-#Rule of thump: random factors should have >= 5 levels. 
-#Random vs fixed effects: 
-#Random effects should be categorical. Interested in controlling for/estimate the variance. 
-#Fixed effects are the effects we known from linear models
-
-#growth varying per day, both intercept and slope vary per individual including explanatory variables
-#model fitted with log transformed weight_kg
-
-# Growth model with Froh
-RM2_EV_froh <- lmer(Weight_kg_log ~ froh_scale + 
-               froh_mum_scale +
-               Sex + 
-               Season + 
-               Beach + 
-               Age_Days_scale +
-               (1 + scale(Age_Days) | ID), 
-               data = SurvivorsRM_Day60)
-#summary(RM2_EV_froh)
-```
-```{r, fig.show="hold", out.width="50%"}
-testDispersion(RM2_EV_froh) #good fit
-plotQQunif(RM2_EV_froh) #good fit
-plotResiduals(RM2_EV_froh)
-
-# Predict values for your existing data
-predicted_values <- predict(RM2_EV_froh, type = "response")
-na_values <- rep(NA, 20) #to make the predicted no. of values equal to the observed data
-predicted_values <- c(predicted_values, na_values)
-
-#plot the densities of the predicted and observed data
-log_model <- ggplot(SurvivorsRM_Day60, aes(x = Weight_kg_log)) +
-  geom_density(fill = "orange", alpha = 0.5) +
-  geom_density(aes(x = predicted_values), fill = "purple", alpha = 0.5) +
-  labs(x = "log(Weight)", y = "Density") +
-  ggtitle("Observed vs. Predicted Weight")
-
-plot_grid(log_model, label_size = 10)
-
-#clean up
-rm(cor_matrix, eigenvalues, na_values)
-```
-
 ### Model: weight gain
 As the growth curves turn out to be linear, we made a model of weight gain based on last weight - first weight.
 ```{r, echo=FALSE}
@@ -667,12 +556,11 @@ summary(Growth_model)
 
 ### Residual check of model
 ```{r, fig.show="hold", out.width="50%"}
-#Test model
 testDispersion(Growth_model) #good fit
 plotQQunif(Growth_model) #deviation not significant
 plotResiduals(Growth_model)
 
-#test model fit 
+# Test model fit 
 # Predict values for your existing data
 predicted_values <- predict(Growth_model, type = "response")
 na_values <- rep(NA, 4) #to make the predicted no. of values equal to the observed data
@@ -714,44 +602,56 @@ webshot::webshot(here("Tables", "Table_Weight_gain_Froh.html"),
 ```
 
 ### Individual growth curves
-We can use the repeated measures dataset to built a weight model and extract individual growth curves, that we can further explore. The growth curves estimate trajectories that are unique to each individual. 
+For the models with repeated measures, a random effects term 'ID' is added to inform the model that some observations are clustered within the same individual. The base is built around a generalized linear mixed-effects model (GLMM) with Gamma(link = "identity") data distribution to account for the repeated measures and the right-skewed data.  
 ```{r}
-#Get individual growth curves (utilizes the growth model from the previous section)
-Coefficients.froh <- coef(RM2_EV_froh)[[1]][c("scale(Age_Days)", "(Intercept)")]
-setnames(Coefficients.froh, c("Slope.froh", "Intercept.froh"))
-Coefficients.froh <- data.table(ID = rownames(Coefficients.froh), Coefficients.froh)
+# Unconditional means model aka null model (no predictors)
+RM0 <- glmer(Weight_kg ~ 1 + (1 | ID), 
+             data = SurvivorsRM_Day60,
+             family = Gamma(link="identity"))
+#summary(RM0)
 
-#The model was built on log transformed weight data, so the coefficients have been back transformed. 
-Coefficients.froh$Slope.froh <- exp(Coefficients.froh$Slope.froh)
-Coefficients.froh$Intercept.froh <- exp(Coefficients.froh$Intercept.froh)
-UniqueSurvivors_Day60 <- left_join(UniqueSurvivors_Day60, Coefficients.froh, by = 'ID')
+# Growth varying per day, each individual has different intercepts, but the same slope
+RM <- glmer(Weight_kg ~ Age_Days + (1 | ID), 
+            data = SurvivorsRM_Day60, 
+            family = Gamma(link="identity"))
+#summary(RM)
 
-#shapiro.test(UniqueSurvivors_Day60$Slope) #normally distributed
-#shapiro.test(UniqueSurvivors_Day60$Intercept) #normally distributed
+# Growth varying per day, each individual has different slopes ((Age_Days | ID))
+#the -1 in (Age_Days_scale - 1 | ID) suppress the intercept
+RM1 <- glmer(Weight_kg ~ Age_Days + (Age_Days - 1 | ID), 
+             data = SurvivorsRM_Day60, 
+             family = Gamma(link="identity"))
+#summary(RM1)
 
+# Growth varying per day, both intercept and slope vary per individual
+RM2 <- glmer(Weight_kg ~ Age_Days + (1 + Age_Days | ID), 
+             data = SurvivorsRM_Day60, 
+             family = Gamma(link="identity"))
+#summary(RM2)
 
-I.model.froh <- lm(Intercept.froh ~ Sex +
-                   Season +
-                   Beach + 
-                   froh +
-                   froh_mum, 
-                   data = UniqueSurvivors_Day60)
-#plot(I.model.froh)
-#summary(I.model.froh) #intercept is essentially birth weight, and is not explained strongly by any of the other parameters
-#testDispersion(I.model.froh) #good fit
-#plotQQunif(I.model.froh) #deviation not significant
+# Explanation: Fixed effects estimate: Intercept is average birth weight 
+                                    # Age_Days is one day change in weight
+            # Random effects: associated variance
+            # Intercept: how much variance in birth weight between pups
+            # Age_Days: difference in slope. 0.00060 might not sound as much
+            # Corr: the correlation between the slope and intercept: 0.36 
+            # it's positive, which indicates that pups with higher intercept
+            # on average has a steeper slope as well. 
+            # Residual: 0.5593029. Refers to the variance not explained by the variables in the model
+            # additionally, looking at confint(RM2), the confidence interval
+            # for the intercept and for the Age_Days does not cross 0. 
+#ICC = repeatability of weight across individuals
 
-S.model.froh <- lm(Slope.froh ~ Sex +
-                   Season +
-                   Beach + 
-                   froh +
-                   froh_mum, 
-                   data = UniqueSurvivors_Day60)
+models <- list(RM0, RM, RM1, RM2)
+mod.names <- c('null-model', 'intercept', 'slope', 'i+s')
+AIC_model_structure <- aictab(cand.set = models, modnames = mod.names)
+AIC_model_structure
+# The RM2 model, which allows both intercept and slope to vary per individual performs best. 
+#testDispersion(RM2)
+#plotQQunif(RM2)
 
-#plot(S.model.froh)
-#summary(S.model.froh) #slope is explained by sex with males growing faster
-#testDispersion(S.model.froh) #good fit
-#plotQQunif(S.model.froh) #deviation not significant
+# Clean up
+rm(RM0, RM1, RM, models, mod.names)
 ```
 
 \newpage
@@ -828,12 +728,16 @@ plot_label <- c(
 # Function for custom forest plots
 source(here("Rcode", "custom_forest_plot.R"))
 
+lab7 <- paste0("(a) Pup birth mass\nIncl. maternal effects\n n = ", nobs(BW.model.froh))
+lab8 <- paste0("(b) Pup survival\nIncl. maternal effects\n n = ", nobs(Survival.model.froh))
+lab9 <- paste0("(c) Pup growth\nIncl. maternal effects\n n = ", nobs(Growth_model))
+
 #birth weight
-p.BW.froh <- plot_data_models(BW.model.froh, "(a) Pup birth mass", gglayer_theme)
+p.BW.froh <- plot_data_models(BW.model.froh, lab7, gglayer_theme)
 #survival
-p.survival.froh <- plot_data_models(Survival.model.froh, "(b) Pup survival", gglayer_theme)
+p.survival.froh <- plot_data_models(Survival.model.froh, lab8, gglayer_theme)
 #growth
-p.growth.froh <- plot_data_models(Growth_model, "(c) Pup growth", gglayer_theme)
+p.growth.froh <- plot_data_models(Growth_model, lab9, gglayer_theme)
 ```
 
 Plots for figure
@@ -891,23 +795,7 @@ p.IDGrowth <- SubIllu + gglayer_theme_alt + theme(legend.position = c(0.12, 0.73
 
 #plot_grid(SubIllu, AllCurves, labels = "AUTO", label_size = 20)
 
-library(ggsignif)
-
-I.sex.froh <- ggplot(data = UniqueSurvivors_Day60, aes (x=Sex, y=Slope.froh, fill = Sex)) +
-  geom_boxplot(fill = c("#872ca2", "#ea4f88"), alpha = 0.9) +
-  geom_signif(comparisons = list(c("M", "F")), map_signif_level=TRUE, textsize = 7) +
-  ylim(0.91, 1.1) +
-  ylab("Slope") + #name of y lab
-  theme_anneke() +
-  #theme(axis.title.y=element_text(angle=0, vjust = 0.5)) +
-  ggtitle("(f) Sex driven difference in slope") +
-  #theme(axis.title = element_text(vjust = 1, hjust = 0.5)) + # angle of axis title 
-  theme(axis.line.x = element_line(colour = 'black', linetype='solid'),
-        axis.line.y = element_line(colour = 'black', linetype='solid'),
-        axis.text.y = element_text(colour = 'black'),
-        plot.title = element_text(size = rel(1))) 
-
-  #dev.off()
+#dev.off()
 ```
 
 Final figure
@@ -922,7 +810,7 @@ Final_figure_froh_h <- cowplot::plot_grid(top_row, bottom_row, nrow = 2)
 
 Final_figure_froh_h
 
-# ggsave(here("Figs", "F3_figure_froh_h.jpg"), Final_figure_froh_h, width = 7, height = 7)
+#ggsave(here("Figs", "F3_figure_froh_h.jpg"), Final_figure_froh_h, width = 8, height = 8)
 
 ```
 

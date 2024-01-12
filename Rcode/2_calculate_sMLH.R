@@ -7,7 +7,7 @@
 # heterozygosity (sMLH) and identity disequilibrium (g2) for 
 # both microsatellite data and SNP data
 #
-# Date: 2023-11-30
+# Date: 2023-12-01
 # -----------------------------------------------------------
 
 
@@ -167,38 +167,38 @@ openxlsx::write.xlsx(pup_data,
 ## ---- sMLH_SNPs --------
 
 # To save time, run code below only once, then save the output
-#
-# #~~ Load SNP data
-# snp_data <- data.table::fread(here("Data", "Processed", "SNPs", "Rebeccas_Samples_Mendel_OriginalPedigree_hw.raw"))
-# 
-# #str(snp_data)
-# 
-# 
-# #~~ Convert data to inbreedR input
-# snp_genotypes <-  snp_data[,-c(1:6)]
-# snp_ids <- snp_data %>% select(2)
-# 
-# # .raw is encoded such that the SNP has _x with x being the minor allele. 0 means 0 counts of the minor allele, 1 means 1 count and 2 means two.
-# # eg SNP_G 0 = CC, 1 = GC or CG, 2 = GG
-# # So, 1 is het, 0 or 2 is hom
-# 
-# #~~ convert all 2s into 0s, so that all homozygotes are 0 and heterozygotes are 1
-# snp_genotypes[snp_genotypes == 2] <- 0
-# 
-# #~~ Check if data is in right format for InbreedR
-# check_data(snp_genotypes, num_ind = nrow(snp_ids), num_loci = length(snp_genotypes))
-# 
-# #~~ Calculate sMLH
-# hetSNPs <- sMLH(snp_genotypes)
-# 
-# sMLH_SNPs <- cbind(snp_ids, hetSNPs)
-# colnames(sMLH_SNPs) <- c("ID", "sMLH_SNPs")
-# 
-# #~~ save SNP sMLH data
-# write.table(sMLH_SNPs,
-#             here("Data", "Processed", "sMLH_SNPs.txt"), 
-#             quote = F,
-#             row.names = F)
+
+#~~ Load SNP data
+snp_data <- data.table::fread(here("Data", "Processed", "SNPs", "NEW_POS_Rebeccas_Samples_Mendel_OriginalPedigree_hw_mapped_autosomes.raw"))
+
+#str(snp_data)
+
+
+#~~ Convert data to inbreedR input
+snp_genotypes <-  snp_data[,-c(1:6)]
+snp_ids <- snp_data %>% select(2)
+
+# .raw is encoded such that the SNP has _x with x being the minor allele. 0 means 0 counts of the minor allele, 1 means 1 count and 2 means two.
+# eg SNP_G 0 = CC, 1 = GC or CG, 2 = GG
+# So, 1 is het, 0 or 2 is hom
+
+#~~ convert all 2s into 0s, so that all homozygotes are 0 and heterozygotes are 1
+snp_genotypes[snp_genotypes == 2] <- 0
+
+#~~ Check if data is in right format for InbreedR
+check_data(snp_genotypes, num_ind = nrow(snp_ids), num_loci = length(snp_genotypes))
+
+#~~ Calculate sMLH
+hetSNPs <- sMLH(snp_genotypes)
+
+sMLH_SNPs <- cbind(snp_ids, hetSNPs)
+colnames(sMLH_SNPs) <- c("ID", "sMLH_SNPs")
+
+#~~ save SNP sMLH data
+write.table(sMLH_SNPs,
+            here("Data", "Processed", "sMLH_SNPs.txt"),
+            quote = F,
+            row.names = F)
 
 #~~ Load data that was generated in the script above
 sMLH_SNPs <- read.table(here("Data", "Processed", "sMLH_SNPs.txt"), 
@@ -249,7 +249,7 @@ head(sMLH_both)
 #~~ Correlation plot
 P.sMLH <- ggpubr::ggscatter(sMLH_both,
                             x = "sMLH_SNPs",
-                            xlab = "sMLH 77k SNPs",
+                            xlab = "sMLH 75k autosomal SNPs",
                             y = "sMLH_msat39",
                             ylab = "sMLH 39 microsatellites",
                             add = "reg.line",
@@ -265,7 +265,7 @@ P.sMLH
 #~~ Split by beach
 P.FWB <- ggpubr::ggscatter(sMLH_both %>% filter(grepl("^AGPC", BAS_ID) | grepl("^AGFC", BAS_ID)),
                            x = "sMLH_SNPs",
-                           xlab = "sMLH 77k SNPs",
+                           xlab = "sMLH 75k autosomal SNPs",
                            y = "sMLH_msat39",
                            ylab = "sMLH 39 microsatellites",
                            title = "FWB mums and pups",
@@ -278,7 +278,7 @@ P.FWB
 
 P.SSB <- ggpubr::ggscatter(sMLH_both %>% filter(grepl("^AGP1", BAS_ID) | grepl("^AGF1", BAS_ID)),
                            x = "sMLH_SNPs",
-                           xlab = "sMLH 77k SNPs",
+                           xlab = "sMLH 75k autosomal SNPs",
                            y = "sMLH_msat39",
                            ylab = "sMLH 39 microsatellites",
                            title = "SSB mums and pups",
@@ -291,7 +291,7 @@ P.SSB
 
 p.both <- cowplot::plot_grid(P.SSB, P.FWB) 
 p.both
-# Directions seem opposite for the beaches, however both correlations are not significant
+# Directions seem opposite for the beaches, and in fact significantly positive for SSB (p = 0.041)
 
 # cowplot::save_plot(here("Figs", "sMLH_correlation_plots.jpg"), p.both, base_width = 7, base_height = 5)
 
@@ -378,42 +378,7 @@ g2_39loci
 
 ## ---- g2_SNPs_SSB --------
 
-# # Run this on server to save some time
-# 
-# #~~ SSB individuals only
-# 
-# # Load SNP data
-# snp_data <- data.table::fread(here("data", "processed", "Rebeccas_Samples_Mendel_OriginalPedigree_hw.raw"))
-# 
-# # Keep only SSB individuals
-# snp_data_SSB <- snp_data %>%
-#   filter(!grepl("^F", IID) & !grepl("^N", IID) & !grepl("^C", IID))
-# 
-# #view(snp_data_SSB %>% select(FID, IID))
-# 
-# #str(snp_data_SSB)
-# 
-# # Convert data to inbreedR input
-# snp_genotypes_SSB <-  snp_data_SSB[,-c(1:6)]
-# snp_ids_SSB <- snp_data_SSB %>% select(2)
-# 
-# # .raw is encoded such that the SNP has _x with x being the minor allele. 0 means 0 counts of the minor allele, 1 means 1 count and 2 means two.
-# # eg SNP_G 0 = CC, 1 = GC or CG, 2 = GG
-# # So, 1 is het, 0 or 2 is hom
-# 
-# # convert all 2s into 0s, so that all homozygotes are 0 and heterozygotes are 1
-# snp_genotypes_SSB[snp_genotypes_SSB == 2] <- 0
-# 
-# # Check if data is in right format for InbreedR
-# check_data(snp_genotypes_SSB, num_ind = nrow(snp_ids_SSB), num_loci = length(snp_genotypes_SSB))
-# 
-# # Calculate g2 using 39 loci
-# g2_snp_geno_SSB <- g2_snps(snp_genotypes_SSB, nperm = 1000, nboot = 1000, CI = 0.95, parallel = T, ncores = 8)
-# 
-# # As g2 calculation takes a while, save the result as .R file
-# save(g2_snp_geno_SSB, file = here("data", "processed", "g2_snps_SSB.RData"))
-
-# SNP g2 values (calculated in diffent script to allow to run on server)
+# SNP g2 values (file generated in "calculate_g2.R" script that was ran on the server)
 load(here("Data", "Processed", "g2_snps_SSB.RData"))
 
 g2_snp_geno_SSB
@@ -423,48 +388,22 @@ g2_snp_geno_SSB
 # Calculation of identity disequilibrium with g2 for SNP data
 # -----------------------------------------------------------
 #   
-#   Data: 98 observations at 77417 markers
+#   Data: 98 observations at 75101 markers
 # Function call = g2_snps(genotypes = snp_genotypes_SSB, nperm = 1000, nboot = 1000,     CI = 0.95, parallel = T, ncores = 8)
 # 
-# g2 = 0.0001999468, se = 3.06828e-05
+# g2 = 0.0001625322, se = 2.841268e-05
 # 
 # confidence interval 
 # 2.5%        97.5% 
-#   0.0001430512 0.0002588795 
+#   0.0001073699 0.0002159702 
 # 
 # p (g2 > 0) = 0.001 (based on 999 permutations)
 
 
 
-
-
-# # Run this on server to save some time
-# 
-# #~~ All samples
-# 
-# # Load SNP data
-# snp_data <- data.table::fread(here("Data", "Raw", "Rebeccas_Samples_Mendel_OriginalPedigree_hw.raw"))
-# 
-# #str(snp_data)
-# 
-# # Convert data to inbreedR input
-# snp_genotypes <-  snp_data[,-c(1:6)]
-# snp_ids <- snp_data %>% select(2)
-# 
-# # convert all 2s into 0s, so that all homozygotes are 0 and heterozygotes are 1
-# snp_genotypes[snp_genotypes == 2] <- 0
-# 
-# # Check if data is in right format for InbreedR
-# check_data(snp_genotypes, num_ind = nrow(snp_ids), num_loci = length(snp_genotypes))
-# 
-# # Calculate g2 using 39 loci
-# g2_snp_geno <- g2_snps(snp_genotypes, nperm = 1000, nboot = 1000, CI = 0.95, parallel = T, ncores = 2)
-# 
-# # As g2 calculation takes a while, save the result as .R file
-# save(g2_snp_geno, file = here("Data", "Processed", "g2_snps.RData"))
-
 ## ---- g2_SNPs --------
 
+# SNP g2 values (file generated in "calculate_g2.R" script that was ran on the server)
 load(here("Data", "Processed", "g2_snps.RData"))
 
 # summary SNPs
@@ -474,16 +413,16 @@ g2_snp_geno
 
 # Calculation of identity disequilibrium with g2 for SNP data
 # -----------------------------------------------------------
-#
-#   Data: 196 observations at 77417 markers
+#   
+#   Data: 196 observations at 75101 markers
 # Function call = g2_snps(genotypes = snp_genotypes, nperm = 1000, nboot = 1000,     CI = 0.95, parallel = T, ncores = 8)
-#
-# g2 = 0.000163467, se = 2.081776e-05
-#
-# confidence interval
-# 2.5%        97.5%
-#   0.0001242281 0.0002068790
-#
+# 
+# g2 = 0.0001179302, se = 1.753435e-05
+# 
+# confidence interval 
+# 2.5%        97.5% 
+#   8.597162e-05 1.523841e-04 
+# 
 # p (g2 > 0) = 0.001 (based on 999 permutations)
 
 
@@ -517,11 +456,11 @@ ggplot(g2_plot, aes(x = g2_boot, fill = gen_data)) +
   geom_histogram(alpha = 0.7, position = "identity", binwidth = 0.00001) + # 0.00001 or 0.00005 ?
   scale_fill_manual(values = c(col1, col2), labels = c("msats\n(n = 1491)", "SNPs\n(n = 196)")) +
   # Add CI bars and g2 line for msats
-  geom_errorbarh(aes(xmin = g2_boot_summary_msat$lcl_msat , xmax = g2_boot_summary_msat$ucl_msat , y = 200),
+  geom_errorbarh(aes(xmin = g2_boot_summary_msat$lcl_msat , xmax = g2_boot_summary_msat$ucl_msat , y = 250),
                  linewidth = 0.8, color = col1, linetype = "solid", height = 0) +
   geom_vline(xintercept = g2_39loci$g2, linewidth = 0.6, color = col1, linetype = "dashed") +
   # Add CI bars and g2 line for SNPs  
-  geom_errorbarh(aes(xmin = g2_boot_summary_snps$lcl_snps , xmax = g2_boot_summary_snps$ucl_snps , y = 205),
+  geom_errorbarh(aes(xmin = g2_boot_summary_snps$lcl_snps , xmax = g2_boot_summary_snps$ucl_snps , y = 255),
                  linewidth = 0.8, color = col2, linetype = "solid", height = 0) +
   geom_vline(xintercept = g2_snp_geno$g2, linewidth = 0.6, color = col2, linetype = "dashed") +  
   # Add zero line
@@ -576,11 +515,11 @@ ggplot(g2_plot, aes(x = g2_boot, fill = gen_data)) +
   geom_histogram(alpha = 0.7, position = "identity", binwidth = 0.00001) + # 0.00001 or 0.00005 ?
   scale_fill_manual(values = c(col1, col2), labels = c("msats SSB\n(n = 1391)", "SNPs SSB\n(n = 98)")) +
   # Add CI bars and g2 line for msats
-  geom_errorbarh(aes(xmin = g2_boot_summary_msat_SSB$lcl_msat , xmax = g2_boot_summary_msat_SSB$ucl_msat , y = 135),
+  geom_errorbarh(aes(xmin = g2_boot_summary_msat_SSB$lcl_msat , xmax = g2_boot_summary_msat_SSB$ucl_msat , y = 140),
                  linewidth = 0.8, color = col1, linetype = "solid", height = 0) +
   geom_vline(xintercept = g2_39loci_SSB$g2, linewidth = 0.6, color = col1, linetype = "dashed") +
   # Add CI bars and g2 line for SNPs  
-  geom_errorbarh(aes(xmin = g2_boot_summary_snps_SSB$lcl_snps , xmax = g2_boot_summary_snps_SSB$ucl_snps , y = 140),
+  geom_errorbarh(aes(xmin = g2_boot_summary_snps_SSB$lcl_snps , xmax = g2_boot_summary_snps_SSB$ucl_snps , y = 145),
                  linewidth = 0.8, color = col2, linetype = "solid", height = 0) +
   geom_vline(xintercept = g2_snp_geno_SSB$g2, linewidth = 0.6, color = col2, linetype = "dashed") +  
   # Add zero line

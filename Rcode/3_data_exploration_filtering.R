@@ -9,7 +9,7 @@
 # - remove pusp with missing survival data
 # In addition some basic data exploration is done.
 #
-# Date: 2023-12-01
+# Date: 2023-12-19
 # -----------------------------------------------------------
 
 
@@ -194,7 +194,11 @@ pup_data <- pup_data %>%
 
 ##---- chunk_end
 
-#~~ Save filtered data
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~#
+#  Save filtered data  ####
+#~~~~~~~~~~~~~~~~~~~~~~~~~#
 
 openxlsx::write.xlsx(pup_data,
                      here("Data", "Processed", "filtered_pup_survival.xlsx"), quote = F,
@@ -336,7 +340,16 @@ ggplot(complete.pups %>% filter(Survival == 1), aes(x = Year, y = Age_Tag)) +
   geom_boxplot()
 
 
-#~~ Exploration of pup sex ratio per year
+#~~ Exploration of pup sex
+complete.pups2 %>% 
+  filter(!is.na(Pup_Sex)) %>%
+  group_by(Pup_Sex) %>%
+  count()
+# Pup_Sex     n
+# 1 F         453
+# 2 M         431
+
+#  Sex ratio per year
 complete.pups2 %>% 
   filter(!is.na(Pup_Sex)) %>%
   group_by(Year,Pup_Sex) %>%
@@ -375,19 +388,129 @@ ggplot(complete.pups2, aes(x=WeightGain)) +
 ggplot(complete.pups2, aes(x=Pup_TagWeight)) +
   geom_histogram()
 
-# Age at taggin ~ Age, split by sex
+# Plot all variables against one another
+panel.cor <- function(x, y, digits=1, prefix="", cex.cor)
+{
+  usr <- par("usr"); on.exit(par(usr))
+  par(usr = c(0, 1, 0, 1))
+  r1=cor(x,y,use="pairwise.complete.obs")
+  r <- abs(cor(x, y,use="pairwise.complete.obs"))
+  
+  txt <- format(c(r1, 0.123456789), digits=digits)[1]
+  txt <- paste(prefix, txt, sep="")
+  if(missing(cex.cor)) cex <- 1.5/strwidth(txt)
+  text(0.5, 0.5, txt, cex = cex * r)
+}
+
+panel.smooth=function (x, y, col = par("col"), bg = NA, pch = par("pch"),
+                        cex = 1, col.smooth = "black", span = 2/3, iter = 3, ...)
+{
+  points(x, y, pch = pch, col = col, bg = bg, cex = cex)
+  ok <- is.finite(x) & is.finite(y)
+  if (any(ok))
+    lines(stats::lowess(x[ok], y[ok], f = span, iter = iter),
+          col = 1, ...)
+}
+
+MyVars <- c("WeightGain", "Survival", "Pup_BirthWeight", "sMLH_msat39_pup", "Pup_Sex", "Age_Tag", "Year", "sMLH_msat39_mum", "Mum_Age")
+pairs(pup_data[,MyVars], 
+      lower.panel = panel.smooth,
+      upper.panel = panel.cor)
+
+# Pup sex ~ pup sMLH, split by sex
+ggplot(complete.pups2, aes(x=Pup_Sex, y=sMLH_msat39_pup)) +
+  geom_boxplot()
+# sMLH does not look different between sexes
+
+# Effect of birth weight on growth
+ggpubr::ggscatter(complete.pups2,
+                  x = "Pup_BirthWeight",
+                  xlab = "Pup birth mass",
+                  y = "WeightGain", 
+                  ylab = "Pup growth",
+                  color = "Pup_Sex",
+                  add = "reg.line",
+                  conf.int = TRUE,
+                  #cor.coef = TRUE,
+                  cor.method = "pearson",
+                  na.rm = TRUE) +
+  ggpubr::stat_cor(aes(color = Pup_Sex, label = paste(..rr.label.., ..p.label.., sep = "~`,`~")))
+# Although males are born heavier they gain weight slightly slower than females
+
+# Were males caught at a different age?
+ggpubr::ggboxplot(complete.pups2,
+                  x = "Pup_Sex",
+                  xlab = "Pup sex",
+                  y = "Age_Tag",
+                  ylab = "Age at tagging (days)",
+                  add = "jitter") +
+  ggpubr::stat_compare_means(label.y = 10)
+# Males were caught slightly earlier, but not significantly so
+
+# Age at tagging ~ Weight at tagging, split by sex
 ggplot(complete.pups2, aes(x=Age_Tag, y=Pup_TagWeight, color=Pup_Sex)) +
   geom_point() +
   geom_smooth(method='lm')
-# Males seem to grow faster
+# Males are heavier at the same age compared to females, and the difference seems to increase the older the pups
 
-# Age at tagging ~ sMLH, split by sex
+# Age at tagging ~ pup sMLH
+ggpubr::ggscatter(complete.pups2,
+                  x = "Age_Tag",
+                  xlab = "Pup age",
+                  y = "sMLH_msat39_pup", 
+                  ylab = "Pup sMLH",
+                  color = "Pup_Sex",
+                  add = "reg.line",
+                  conf.int = TRUE,
+                  #cor.coef = TRUE,
+                  cor.method = "pearson",
+                  na.rm = TRUE) +
+  ggpubr::stat_cor(aes(color = Pup_Sex, label = paste(..rr.label.., ..p.label.., sep = "~`,`~")))
+# ns, also for smaller dataset with known mothers
+
+# Age at tagging ~ mum sMLH
+ggpubr::ggscatter(complete.pups2,
+                  x = "Age_Tag",
+                  xlab = "Pup age",
+                  y = "sMLH_msat39_mum", 
+                  ylab = "Mum sMLH",
+                  add = "reg.line",
+                  conf.int = TRUE,
+                  #cor.coef = TRUE,
+                  cor.method = "pearson",
+                  na.rm = TRUE) +
+  ggpubr::stat_cor(
+    aes(label = paste(..rr.label.., ..p.label.., sep = "~`,`~")))
+# ns, also for smaller dataset with known mothers
+
+# Age at tagging ~ pup survival
+ggpubr::ggboxplot(complete.pups2,
+                  x = "Survival",
+                  xlab = "Pup survival",
+                  y = "Age_Tag",
+                  ylab = "Pup age (days)",
+                  add = "jitter") +
+  ggpubr::stat_compare_means()
+# Sig for larger dataset, ns but same trend for smaller dataset with known mothers
+
+# Age at tagging ~ pup growth
+ggpubr::ggscatter(complete.pups2,
+                  x = "Age_Tag",
+                  xlab = "Pup age",
+                  y = "WeightGain", 
+                  ylab = "Pup growth",
+                  add = "reg.line",
+                  conf.int = TRUE,
+                  #cor.coef = TRUE,
+                  cor.method = "pearson",
+                  na.rm = TRUE) +
+  ggpubr::stat_cor(
+    aes(label = paste(..rr.label.., ..p.label.., sep = "~`,`~")))
+# significant, also for smaller dataset with known mothers. Not surprising, the older the individual, the more time it had to gain weight
+
+# Tagging weight ~ pup sMLH, split by sex
 ggplot(complete.pups2, aes(x=sMLH_msat39_pup, y=Pup_TagWeight, color=Pup_Sex)) +
   geom_point() +
   geom_smooth(method='lm')
 # Looks very similar for the sexes, would not expect an interaction
-
-ggplot(complete.pups2, aes(x=Pup_Sex, y=sMLH_msat39_pup)) +
-  geom_boxplot()
-# sMLH does not look different between sexes
 

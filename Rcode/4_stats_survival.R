@@ -5,7 +5,7 @@
 #
 # Purpose: This script is used to run the models for pup birth survival.
 #
-# Date: 2023-12-03
+# Date: 2024-01-11
 # -----------------------------------------------------------
 
 
@@ -47,7 +47,7 @@ m1survival <- glm(Survival ~ sMLH_msat39_pup
                   + Year
                   + sMLH_msat39_mum
                   + Mum_Age,
-                  #+ (1 | uniqueID_mum), # including mother ID as a random effect did not change the results significantly, and might be comfounded with mum sMLH
+                  #+ (1 | uniqueID_mum), # including mother ID as a random effect did not change the results significantly, and might be confounded with mum sMLH
                   family=binomial, 
                   data = pup_data)
 # # Because of convergence issues for the model incl mother ID as a random effect, I had to re-run it with more iterations
@@ -136,53 +136,3 @@ webshot::webshot(here("Tables", "Table_survival_full_model_vs_no_mat.html"),
                  file=here("Tables", "Table_survival_full_model_vs_no_mat.png"), delay=2, vheight = 400, vwidth = 700)
 
 ##---- chunk_end
-
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-#  The same models but for female pups only  ####
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-
-#~~ Filter df to keep only female pups
-females <- pup_data %>% filter(Pup_Sex == "F")
-
-#~~ Survival model incl maternal effects, female pups only
-m1survival.f <- glm(Survival ~ sMLH_msat39_pup
-                    #+ Pup_Sex 
-                    + Pup_BirthWeight
-                    + Year
-                    + sMLH_msat39_mum
-                    + Mum_Age,
-                    family=binomial, 
-                    data = females)
-
-summary(m1survival.f)
-
-#~~ Model assumptions
-testDispersion(m1survival.f)
-plotQQunif(m1survival.f)
-plotResiduals(m1survival.f)
-
-#~~ Save model
-saveRDS(m1survival.f, file = here("Data", "Processed", "m1_survival_females.rds"))
-
-#~~ Survival model excl maternal effects, female pups only
-m2survival.f <- glm(Survival ~ sMLH_msat39_pup
-                    #+ Pup_Sex 
-                    + Pup_BirthWeight
-                    + Year,
-                    family=binomial, 
-                    data = females) 
-
-summary(m2survival.f)
-
-#~~ Model assumptions
-testDispersion(m2survival.f)
-plotQQunif(m2survival.f)
-plotResiduals(m2survival.f)
-# The residuals vs. predicted quantile plot shows a small deviation for the 0.75 quantile. However, the combined
-# adjusted quantile test is not significant and also the Kolmogorov-Smirnov(KS)-test is non significant (see QQplot). 
-# So I conclude that the deviation is not very big, and no reason to reject the model.
-
-#~~ Save model
-saveRDS(m2survival.f, file = here("Data", "Processed", "m2_survival_females.rds"))
