@@ -6,7 +6,7 @@
 # Purpose: This script is used to generate updated mum-pup files as well as a file with males
 # that can be used to re-run the NEWPAT excel macro. The difference to script 1b is that it is uses the 
 # msats data after it was corrected for the genotyping mistakes that were found in the first round of the maternity analysis.
-# Re-running the NEWPAT macro allows us to extract the mum-pup pairs that are a genetic match in script 1f.
+# Re-running the NEWPAT macro allows us to extract the mum-pup pairs that are a genetic match in script 1e.
 # NB we do not make a new list of males, since they were not checked, since that is beyond the scope of this analysis.
 #
 # Date: 2023-11-27
