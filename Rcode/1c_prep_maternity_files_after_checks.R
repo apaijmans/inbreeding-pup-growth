@@ -170,6 +170,6 @@ for (i in 1:4) {
 all_AGP <- bind_rows(AGP_list)
 
 openxlsx::write.xlsx(all_AGP, 
-                     here("Data", "Processed", "Paternity", "2017-20_m-p_mat_after_checks.xlsx"))
+                     here("Data", "Processed", "Maternity", "2017-20_m-p_mat_after_checks.xlsx"))
 
 

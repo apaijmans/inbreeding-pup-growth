@@ -204,9 +204,9 @@ for (i in 1:4) {
 # Save mum-pup pairs 2 years together
 all_AGP <- bind_rows(AGP_list)
 openxlsx::write.xlsx(all_AGP, 
-                     here("Data", "Processed", "Paternity", "2018-19_m-p_mat_FWB.xlsx"))
+                     here("Data", "Processed", "Maternity", "2018-19_m-p_mat_FWB.xlsx"))
 
 # Save list of males
 openxlsx::write.xlsx(AGM_gen, #%>% 
                      # mutate(across(everything(), ~replace_na(.x, 0))),
-                     here("Data", "Processed", "Paternity", "2016-19_males_mat_FWB.xlsx"))
+                     here("Data", "Processed", "Maternity", "2016-19_males_mat_FWB.xlsx"))

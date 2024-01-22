@@ -51,7 +51,7 @@ pup_data %>% filter(ID_Pup %in% unique(.[["ID_Pup"]][duplicated(.[["ID_Pup"]])])
 
 mismatches_allowed <- 1
 
-mismatches_after_checks <- here("Data", "Processed", "Paternity", "NewPat50loci_NEW_2017-2020_after_checks.xls")
+mismatches_after_checks <- here("Data", "Processed", "Maternity", "NewPat50loci_NEW_2017-2020_after_checks.xls")
 
 mum_pup_mismatch <- read_excel(mismatches_after_checks) %>%
   select(MUM=...1, PUP=...2, MISMATCHES=...44)
@@ -110,7 +110,7 @@ dup_mums %>%
 #  Add mum-pup relatedness based on NEWPAT macro FWB  ####
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
-mismatches_after_checks <- here("Data", "Processed", "Paternity", "NewPat50loci_NEW_FWB_after_checks.xls")
+mismatches_after_checks <- here("Data", "Processed", "Maternity", "NewPat50loci_NEW_FWB_after_checks.xls")
 
 mum_pup_mismatch <- read_excel(mismatches_after_checks) %>%
   select(MUM=...1, PUP=...2, MISMATCHES=...44)
@@ -247,7 +247,7 @@ openxlsx::write.xlsx(pup_data,
 
 #~~ Load the mismatching mum-pup pairs before the checks
 
-mismatches_before_checks <- here("Data", "Processed", "Paternity", "NewPat50loci_NEW_2017-2020_check_mismatches.xls")
+mismatches_before_checks <- here("Data", "Processed", "Maternity", "NewPat50loci_NEW_2017-2020_check_mismatches.xls")
 
 mum_pup_mismatch <- read_excel(mismatches_before_checks) %>%
   select(MUM=...1, PUP=...2, MISMATCHES=...44)

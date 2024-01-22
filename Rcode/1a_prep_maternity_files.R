@@ -220,21 +220,21 @@ for (i in 1:6) {
 
 # Save list of mum-pup pairs per year
 # openxlsx::write.xlsx(AGP_list[[1]], 
-#                      here("Data", "Processed", "Paternity", paste0(year[1], "_m-p_mat.xlsx")))
+#                      here("Data", "Processed", "Maternity", paste0(year[1], "_m-p_mat.xlsx")))
 # openxlsx::write.xlsx(AGP_list[[2]], 
-#                      here("Data", "Processed", "Paternity", paste0(year[2], "_m-p_mat.xlsx")))
+#                      here("Data", "Processed", "Maternity", paste0(year[2], "_m-p_mat.xlsx")))
 # openxlsx::write.xlsx(AGP_list[[3]], 
-#                      here("Data", "Processed", "Paternity", paste0(year[3], "_m-p_mat.xlsx")))
+#                      here("Data", "Processed", "Maternity", paste0(year[3], "_m-p_mat.xlsx")))
 # openxlsx::write.xlsx(AGP_list[[4]], 
-#                      here("Data", "Processed", "Paternity", paste0(year[4], "_m-p_mat.xlsx")))
+#                      here("Data", "Processed", "Maternity", paste0(year[4], "_m-p_mat.xlsx")))
 
 # Save mum-pup pairs all 4 years together
 all_AGP <- bind_rows(AGP_list)
 openxlsx::write.xlsx(all_AGP, 
-                     here("Data", "Processed", "Paternity", "2017-20_m-p_mat.xlsx"))
+                     here("Data", "Processed", "Maternity", "2017-20_m-p_mat.xlsx"))
 
 # Save list of males
 openxlsx::write.xlsx(AGM_gen, #%>% 
                      # mutate(across(everything(), ~replace_na(.x, 0))),
-                     here("Data", "Processed", "Paternity", "2015-20_males_mat.xlsx"))
+                     here("Data", "Processed", "Maternity", "2015-20_males_mat.xlsx"))
 

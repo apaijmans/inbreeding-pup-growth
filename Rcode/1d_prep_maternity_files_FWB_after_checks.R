@@ -155,5 +155,5 @@ for (i in 1:2) {
 all_AGP <- bind_rows(AGP_list)
 
 openxlsx::write.xlsx(all_AGP, 
-                     here("Data", "Processed", "Paternity", "2018-19_m-p_mat_FWB_after_checks.xlsx"))
+                     here("Data", "Processed", "Maternity", "2018-19_m-p_mat_FWB_after_checks.xlsx"))
 
