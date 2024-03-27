@@ -6,7 +6,7 @@
 # Purpose: This script is used to make figures using 
 # the statistical model outputs
 #
-# Date: 2023-12-03
+# Date: 2024-03-20
 # -----------------------------------------------------------
 
 
@@ -101,60 +101,4 @@ all_plots
 
 ##---- chunk_end
 
-cowplot::save_plot(here("Figs", "F2_Forest_plots_incl_excl_mat.jpg"), all_plots, base_width = 8, base_height = 7)
-
-
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-#  Figure for models using female pups only  ####
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-
-#~~ Load models
-m1birthmass.f <- readRDS(here("Data", "Processed", "m1_birthmass_females.rds"))
-m1survival.f <- readRDS(here("Data", "Processed", "m1_survival_females.rds"))
-m1growth.f <- readRDS(here("Data", "Processed", "m1_growth_females.rds"))
-
-m2birthmass.f <- readRDS(here("Data", "Processed", "m2_birthmass_females.rds"))
-m2survival.f <- readRDS(here("Data", "Processed", "m2_survival_females.rds"))
-m2growth.f <- readRDS(here("Data", "Processed", "m2_growth_females.rds"))
-
-#~~ Labels
-lab1f <- paste0("(a) Female pup birth mass\n n = ", nobs(m1birthmass.f))
-lab2f <- paste0("(b) Female pup survival\n n = ", nobs(m1survival.f))
-lab3f <- paste0("(c) Female pup growth\n n = ", nobs(m1growth.f))
-
-lab4f <- paste0("(d) Female pup birth mass\n n = ", nobs(m2birthmass.f))
-lab5f <- paste0("(e) Female pup survival\n n = ", nobs(m2survival.f))
-lab6f <- paste0("(f) Female pup growth\n n = ", nobs(m2growth.f))
-
-#~~ Plots
-p.bw.f <- plot_data_models(m1birthmass.f, lab1f, gglayer_theme)
-p.surv.f <- plot_data_models(m1survival.f, lab2f, gglayer_theme)
-p.wg.f <- plot_data_models(m1growth.f, lab3f, gglayer_theme)
-
-p2.bw.f <- plot_data_models(m2birthmass.f, lab4f, gglayer_theme)
-p2.surv.f <- plot_data_models(m2survival.f, lab5f, gglayer_theme)
-p2.wg.f <- plot_data_models(m2growth.f, lab6f, gglayer_theme)
-
-all_plots.f <- cowplot::plot_grid(p.bw.f, p.surv.f, p.wg.f,
-                                  p2.bw.f, p2.surv.f, p2.wg.f,
-                                  nrow = 2)
-
-all_plots.f
-
-#cowplot::save_plot(here("Figs", "Forest_plots_female_pups.jpg"), all_plots.f, base_width = 7, base_height = 3.5)
-
-
-# # Label maternal effects in front of fig
-# label_plot <- function(label) {
-#   ggplot() +
-#     geom_text(aes(x = 0, y = 0, label = label), size = 4, angle = 90) +
-#     theme_void()
-# }
-# 
-# all_plots <- cowplot::plot_grid(label_plot("Incl. maternal effects"), p.bw, p.surv, p.wg,
-#                                 label_plot("Excl. maternal effects"), p2.bw, p2.surv, p2.wg,
-#                                 nrow = 2,
-#                                 rel_widths = c(.5, 3, 3, 3))
-# 
-# cowplot::save_plot(here("Figs", "F2_Forest_plots_test.jpg"), all_plots, base_width = 8, base_height = 7)
+cowplot::save_plot(here("Figs", "F2_Forest_plots_incl_excl_mat.jpg"), all_plots, base_width = 8, base_height = 7, dpi = 300)

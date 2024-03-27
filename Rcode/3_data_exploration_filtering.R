@@ -6,10 +6,10 @@
 # Purpose: This script is used to filter the data:
 # - remove mismatching mothers
 # - add a column with survival information
-# - remove pusp with missing survival data
+# - remove pups with missing survival data
 # In addition some basic data exploration is done.
 #
-# Date: 2023-12-19
+# Date: 2024-03-20
 # -----------------------------------------------------------
 
 
@@ -93,19 +93,22 @@ nrow(pup_data %>% filter(!is.na(Pup_Death))) # 209 pups with a date of death
 nrow(pup_data %>% filter(!is.na(Cat_Death))) # 225 pups with a death category
 nrow(pup_data %>% filter(!is.na(Cat_Death) | !is.na(Pup_Death))) # 226. All individuals that died on FWB have no death date, because I did not add that info in the data wrangling steps
 
-nrow(pup_data %>% filter(!is.na(Pup_TagWeight) & (!is.na(Cat_Death) | !is.na(Pup_Death)))) #46 were weighted at tagging, but died later
+nrow(pup_data %>% filter(!is.na(Pup_TagWeight) & (!is.na(Cat_Death) | !is.na(Pup_Death)))) # 46 were weighted at tagging, although in some cases tagging was already carried out at day 0, which seems unlikely? 
+# In any case, because they died before the end of the season we can still take them along
+nrow(pup_data %>% filter(is.na(Pup_TagWeight) & (!is.na(Cat_Death) | !is.na(Pup_Death)))) # 180 died before tagging, or at least no weight was taken at tagging 
+nrow(pup_data %>% filter(!is.na(Pup_TagWeight) & is.na(Pup_Death) & is.na(Cat_Death))) # 858 survived until tagging and beyond
 
 ## ---- survival_data --------
 
 pup_data <- pup_data %>% 
   mutate(Survival = ifelse(!is.na(Cat_Death) | !is.na(Pup_Death), "0", 
-                           ifelse(!is.na(Pup_TagWeight) & !is.na(Pup_Death), "0", 
-                                  ifelse(!is.na(Pup_TagWeight) & is.na(Pup_Death), "1", NA)))) %>%
+                           ifelse(!is.na(Pup_TagWeight) & (!is.na(Cat_Death) | !is.na(Pup_Death)), "0", 
+                                  ifelse(!is.na(Pup_TagWeight) & is.na(Pup_Death) & is.na(Cat_Death), "1", NA)))) %>%
   mutate(Survival = as.factor(Survival))
 
-# All pups that do not have a tagging weight AND also no death date will now have an NA in the Survival column.
+# All pups that do not have a tagging weight AND also no death date/category will now have an NA in the Survival column.
 # These will be removed: we wont be able to use them in the growth model nor the survival model (as we do not know whether they were dead or alive). 
-# So for consistency, we will also not use them in the birth mass model (n=231)
+# So for consistency, we will also not use them in the birth mass model (n=162)
 # nrow(pup_data %>% filter(is.na(Survival)))
 # All pups with a 2nd weight and no death date are assumed to have survived at least until the end of the season
 
@@ -342,23 +345,23 @@ ggplot(complete.pups %>% filter(Survival == 1), aes(x = Year, y = Age_Tag)) +
 
 #~~ Exploration of pup sex
 complete.pups2 %>% 
-  filter(!is.na(Pup_Sex)) %>%
+  #filter(!is.na(Pup_Sex)) %>%
   group_by(Pup_Sex) %>%
   count()
 # Pup_Sex     n
 # 1 F         453
-# 2 M         431
+# 2 M         432
 
 #  Sex ratio per year
 complete.pups2 %>% 
-  filter(!is.na(Pup_Sex)) %>%
+  #filter(!is.na(Pup_Sex)) %>%
   group_by(Year,Pup_Sex) %>%
   count() %>%
   group_by(Year) %>%
   mutate(per =  n/sum(n))
 
 ggplot(complete.pups2 %>% 
-         filter(!is.na(Pup_Sex)) %>%
+         #filter(!is.na(Pup_Sex)) %>%
          group_by(Year,Pup_Sex) %>%
          count() %>%
          group_by(Year) %>%
@@ -372,6 +375,15 @@ ggplot(complete.pups2 %>%
   scale_x_discrete(name ="Year", labels=c("2018","2019","2020", "2021")) +
   labs(fill="Pup sex") +
   theme_anneke()
+
+#~~ Exploration of survival
+complete.pups2 %>% 
+  #filter(!is.na(Pup_Sex)) %>%
+  group_by(Survival) %>%
+  count()
+# Survival     n
+# 1 0         163
+# 2 1         722
 
 
 
@@ -451,7 +463,7 @@ ggpubr::ggboxplot(complete.pups2,
 ggplot(complete.pups2, aes(x=Age_Tag, y=Pup_TagWeight, color=Pup_Sex)) +
   geom_point() +
   geom_smooth(method='lm')
-# Males are heavier at the same age compared to females, and the difference seems to increase the older the pups
+# Males are heavier at the same age compared to females, and the difference seems to increase the older the pups are
 
 # Age at tagging ~ pup sMLH
 ggpubr::ggscatter(complete.pups2,

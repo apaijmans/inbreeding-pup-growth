@@ -9,7 +9,7 @@
 # and foraging trip duration, as well as a figure with the map of
 # South Georgia and Bird Island.
 #
-# Date: 2023-12-19
+# Date: 2024-03-21
 # -----------------------------------------------------------
 
 
@@ -45,6 +45,7 @@ source(here("Rcode", "anneke_theme.R"))
 #~~ Make a list for the theme so it is the same for all figures
 gglayer_theme <- list(
   scale_x_discrete(labels = c(`2017-2018` = "2018", `2018-2019` = "2019", `2019-2020` = "2020", `2020-2021` = "2021")),
+  #scale_x_discrete(labels = c(`2017-2018` = "2017/\n2018", `2018-2019` = "2018/\n2019", `2019-2020` = "2019/\n2020", `2020-2021` = "2020/\n2021")),
   theme_anneke(),
   theme(axis.line.x = element_line(colour = 'black', linetype='solid'),
         axis.line.y = element_line(colour = 'black', linetype='solid'),
@@ -176,6 +177,6 @@ P_seasonal
 
 ##---- chunk_end
 
-ggsave("Figs/F1_seasonal_data_map.jpg", P_seasonal, width = 7, height = 6)
+ggsave("Figs/F1_seasonal_data_map.jpg", P_seasonal, width = 7, height = 6, dpi = 300)
 
 

@@ -5,7 +5,7 @@
 #
 # Purpose: This script is used to run the models for pup birth weight.
 #
-# Date: 2024-01-11
+# Date: 2024-03-20
 # -----------------------------------------------------------
 
 
@@ -97,7 +97,7 @@ plotResiduals(m2birthmass)
 #~~ Further investigation of the outliers
 simulationOutput <- simulateResiduals(fittedModel = m2birthmass) 
 testOutliers(simulationOutput)
-# There are 14 outliers out of 884 obs. 
+# There are 16 outliers out of 885 obs. 
 # Also here, the test for dispersion shows no indication for overdispersion, and the QQplot looks good.
 # Therefore, the model fit is likely to be OK.
 

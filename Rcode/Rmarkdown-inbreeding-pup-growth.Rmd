@@ -1,5 +1,5 @@
 ---
-title: "R-code for 'Little evidence for inbreeding depression for birth mass, survival and growth in Antarctic fur seal pups'" 
+title: "R-code for 'Little evidence of inbreeding depression for birth mass, survival and growth in Antarctic fur seal pups'" 
 author: "Compiled by A.J. Paijmans and A.L. Berthelsen"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
@@ -138,24 +138,37 @@ Making sure all variables have the right categories
 
 Datasets for birth weight, survival and repeated measures growth analysis. Scripts for [SNP data filtering](https://github.com/apaijmans/inbreeding-pup-growth/blob/main/Server/update_PLINK_files.R), [calling ROH and calculating *F*~ROH~](https://github.com/apaijmans/inbreeding-pup-growth/blob/main/Server/call_ROH.R) are available on Github.
 
+Mums that were no genetic match with their pups were removed (concerns pup H2 and H5, they were switched and suckled by the others mum).
+
 ```{r}
 
-DataRM_Day60 <- read.csv(here("Data", "Raw", "GrowthRM_BI1820_Day60.new.csv"))
-
-Unique_Day60 <- subset(DataRM_Day60, DataRM_Day60$Age_Days < 62 & 
-                         !DataRM_Day60$ID == 'H2' & 
-                         !DataRM_Day60$ID == 'H5') %>% 
+DataRM_Day60 <- read.csv(here("Data", "Raw", "GrowthRM_BI1820_Day60.new.csv")) 
+  
+# Select weights taken on day 60 or as close to day 60 as possible
+Unique_Day60 <- DataRM_Day60 %>%  
+  filter(ID != "H2" & ID != "H5") %>%
+  mutate(dummy = Age_Days - 60) %>%
+  mutate(dummy2 = abs(dummy)) %>%
+  group_by(ID) %>%
+  slice_min(dummy2) %>% 
+  slice_max(Age_Days) %>%
+  ungroup() %>%
+  select(-c(dummy, dummy2)) %>%
+  mutate(Last_weight = Weight_kg) %>%
+  mutate(Last_day = Age_Days) %>%
+  mutate(Total_weight_gain = Last_weight - Birth_weight) %>%
   mutate(Sex = as.factor(Sex)) %>% 
   mutate(Season = as.factor(Season)) %>% 
   mutate(Beach = as.factor(Beach)) %>% 
-  distinct(ID, .keep_all = TRUE)
+  select(-c(Weight_kg, Age_Days)) %>%
+  distinct(., .keep_all = TRUE)
 #98 pups
 
 UniqueSurvivors_Day60 <- subset(Unique_Day60, Unique_Day60$Death == 'N')
 #76 pups
 
 SurvivorsRM_Day60 <- subset(DataRM_Day60, DataRM_Day60$Death == 'N' &
-                              DataRM_Day60$Age_Days < 62 & 
+                              #DataRM_Day60$Age_Days < 62 & 
                               !DataRM_Day60$ID == 'H2' & 
                               !DataRM_Day60$ID == 'H5') %>% 
   mutate(Sex = as.factor(Sex)) %>% 
@@ -276,9 +289,6 @@ Parameter estimates from: (a) linear model including maternal genetic diversity,
 
 ## Birth weight analysis
 In this section of the script factors affecting birth weight are investigated.
-
-### Filtered data for birth weight analysis
-Mums that were no genetic match with their pups were removed (concerns pup H2 and H5, they were switched and suckled by the others mum).
 
 ### Data visualization
 Before fitting the models, the raw data is visualized to explore distribution.
@@ -440,9 +450,7 @@ Before fitting the models, the raw data is visualized to explore distribution. W
 ```{r, fig.show="hold", out.width="75%"}
 #mean of weight_kg
 mean_weight <- mean(SurvivorsRM_Day60$Weight_kg, na.rm = T)
-#7.684354
-#max_tagging_weight <- max(SurvivorsRM_Day60$Last_weight, na.rm = T)
-#16.3
+#7.99
 
 weight_raw <- ggplot(SurvivorsRM_Day60, aes(x = Weight_kg)) +
   geom_histogram(binwidth = 0.4, fill = "orange", color = "black") +
@@ -465,7 +473,7 @@ shapiro.test(SurvivorsRM_Day60$Weight_kg) #the shapiro-wilk test tests for norma
 #shapiro.test(scale(SurvivorsRM_Day60$Weight_kg)) still not normally distributed, however if it allows for normally distributed residuals down stream, it is valid. 
 
 #SurvivorsRM_Day60$Weight_kg_scale <- scale(SurvivorsRM_Day60$Weight_kg)
-SurvivorsRM_Day60$Age_Days_scale <- scale(SurvivorsRM_Day60$Age_Days)
+SurvivorsRM_Day60$Age_Days_scale <- scale(SurvivorsRM_Day60$Age_Days)[,1]
 
 ```
 ```{r}
@@ -476,6 +484,8 @@ weight_over_time <- ggplot(SurvivorsRM_Day60, aes(x = Age_Days, y = Weight_kg)) 
        y = "Weight (kg)") +
   theme_minimal()
 
+simple_growth_model <- lm(SurvivorsRM_Day60$Weight_kg ~ SurvivorsRM_Day60$Age_Days)
+
 #plots
 plot_grid(weight_raw, weight_over_time, labels = "AUTO", label_size = 12)
 ```
@@ -483,32 +493,35 @@ Based on both visual inspection and the shapiro-wilk test, the weight data does 
 
 ### Exploration of growth curve fit
 We can explore different growth curves. 
-In the larger dataset birth weight ranges from 2.45 to 7.7 kg and weight at day 60 from 6.5 to 14.6 kg. In this dataset with repeated measures, lowest birth weight is 4.2 and highest last weight is 16.3.
+In the larger dataset, birth weight ranges from `r min(pup_data$Pup_BirthWeight, na.rm = T)` to `r max(pup_data$Pup_BirthWeight, na.rm = T)`kg and weight at day around day 60 from `r min(pup_data %>% filter(Age_Tag > 43 & Age_Tag < 70) %>% select(Pup_TagWeight), na.rm = T)` to `r max(pup_data %>% filter(Age_Tag > 43 & Age_Tag < 70) %>% select(Pup_TagWeight), na.rm = T)`kg. In this dataset with repeated measures, lowest birth weight is `r min(Unique_Day60$Birth_weight, na.rm = T)` and highest last weight is `r max(Unique_Day60$Last_weight, na.rm = T)`kg.
 ```{r}
 #For the logistic and gompertz models, the parameters K, r and t are used to fit the model:
 #K is the max weight the pups can reach, set to 20kg, as heaviest pup was 16.3
-#r is the growth rate, the average growth rate is used: 0.080821
+#r is the growth rate, the average growth rate is used
 #t is the inflection point; the time at which the pups growth most rapidly.
 #set at 30days, as this is the mid-point
+
+lm_growth_rate <- simple_growth_model$coefficients[2]
+lm_intercept <- simple_growth_model$coefficients[1]
 
 #logistic growth model
 logistic.model <- nls(Weight_kg ~ K / (1 + exp(-r * (Age_Days - t))), 
                       data = SurvivorsRM_Day60, 
-                      start = list(K = 20, r = 0.080821, t = 30))
+                      start = list(K = 20, r = lm_growth_rate, t = 30))
 
 #gompertz growth model
 gompertz.model <- nls(Weight_kg ~ K * exp(-exp(-r * (Age_Days - t))), 
                       data = SurvivorsRM_Day60, 
-                      start = list(K = 20, r = 0.080821, t = 30))
+                      start = list(K = 20, r = lm_growth_rate, t = 30))
 
 #For the linear model, a and b are parameters used to fit the model:
-#a is the linear growth rate; the average growth rate is used: 0.080821
+#a is the linear growth rate; the average growth rate is used
 #b is the birth weight, here set at 2.45kg, as lightest measured pup was 2.45kg.
 
 #Linear
 linear.model <- nls(Weight_kg ~ a * Age_Days + b, 
                     data = SurvivorsRM_Day60, 
-                    start = list(a = 0.080821, b = 2.45))
+                    start = list(a = lm_growth_rate, b = min(pup_data$Pup_BirthWeight, na.rm = T)))
 
 # Compare the models using AIC 
 models.1 <- list(linear.model, logistic.model, gompertz.model)
@@ -709,11 +722,7 @@ plot_label <- c(
   `(Intercept)` = "intercept",
   Last_day = "pup age",
   Age_Days_scale = "age days (scaled)",
-  sMLH_SNP.new_scale = "pup sMLH SNP",
-  sMLH_SNP.new = "pup sMLH SNP",
   SexM = "pup sex [M]",
-  sMLH_SNP.new_mum_scale = "mother sMLH SNP",
-  sMLH_SNP.new_mum = "mother sMLH SNP",
   Season1920 = "season [2020]",
   BeachSSB = "colony [SSB]",
   Birth_weight = "pup birth mass",
@@ -745,7 +754,7 @@ Plots for figure
 AllCurves <- ggplot(data = SurvivorsRM_Day60, aes(x = Age_Days, y = Weight_kg, group = ID)) +
   geom_smooth(method = "lm", se = F, colour = "grey", linewidth = 0.8, alpha = 0.5) +
   geom_point(shape = 15, fill = "black", size = 1.5) +
-  geom_abline(slope = 0.081732, intercept = 5.597941, colour = "black", linewidth = 1.1) + #average
+  geom_abline(slope = lm_growth_rate, intercept = lm_intercept, colour = "black", linewidth = 1.1) + #average
   #geom_abline(slope = 0.080226, intercept = 5.502678, colour = "orange", size = 2) +
   #annotate(geom="text", y = 15.5, x = 15, size = 5, label = "FWB: y = 0.080226*age + 5.502678", color = "orange") +
   #geom_abline(slope = 0.080821, intercept = 5.511745, colour = "purple", size = 2) +
@@ -778,7 +787,7 @@ SubIllu <- ggplot(data = PlotIllu, aes(x = Age_Days, y = Weight_kg, colour = ID)
   #theme(legend.position = c(0.15, 0.92)) +
   theme(legend.background = element_rect(fill="NA")) +
   xlab("Age (days)") + #name of x lab
-  xlim(0,60) + #x axis limits
+  xlim(0,65) + #x axis limits
   ylab("Weight (kg)") + #name of y lab
   ylim(3.5,16.4) +
   #guides(fill=guide_legend(title="ID")) + #name of legend
@@ -810,7 +819,7 @@ Final_figure_froh_h <- cowplot::plot_grid(top_row, bottom_row, nrow = 2)
 
 Final_figure_froh_h
 
-#ggsave(here("Figs", "F3_figure_froh_h.jpg"), Final_figure_froh_h, width = 8, height = 8)
+ggsave(here("Figs", "F3_figure_froh_h.jpg"), Final_figure_froh_h, width = 8, height = 8, dpi = 300)
 
 ```
 

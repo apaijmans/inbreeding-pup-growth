@@ -161,59 +161,6 @@ for (i in 1:4) {
 
 
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-#  Loop to generate df for males  ####
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
-
-#~~ Loop through following code to generate list of males from years 2015-2019
-
-all_genotypes <- read_excel(here("Data", "Raw", "all_msat_genotypes_uniqueID.xlsx"),
-                            guess_max = 16000)
-
-#~~ Keep 1 sample for each group of unique IDs, picking the one with Best_genotype = 1 or NA
-AFS <- all_genotypes %>%
-  group_by(uniqueID) %>%
-  filter(Best_genotype == max(Best_genotype)|is.na(Best_genotype)) %>%
-  ungroup()
-
-year_m <- c(2015, 2016, 2017, 2018, 2019, 2020)
-AGM_gen <- NULL
-
-for (i in 1:6) {
-  
-  #~~ Keep only males with specific birth year
-  AGM <- AFS %>%
-    filter(grepl(paste0("^AGM", substr(year_m[i], 3, 4),".*"), dummyID)) %>%
-    mutate(lifeStage="M")%>%
-    select(SampleID=dummyID, lifeStage, Pv9.a:Mang36.b)
-  
-  #~~ Remove all pairs where one or both individuals have more than x gaps
-  # Make column with number of gaps/individual
-  AGM$gaps39 = apply(AGM %>% select(Pv9.a:Mang36.b), 1, function(x) sum(is.na(x))/2)
-  
-  #~~ Print how many groups will be removed
-  print(paste0("n males removed from ", year_m[i], ": ", nrow(AGM %>% filter(gaps39 > n_gaps))))
-  
-  AGM <- AGM %>%
-    filter(!gaps39 > n_gaps)
-  
-  AGM <- AGM %>% select(-gaps39)
-  
-  AGM_gen <- rbind(AGM_gen, AGM) 
-  
-}
-
-# [1] "n males removed from 2015: 0"
-# [1] "n males removed from 2016: 0"
-# [1] "n males removed from 2017: 0"
-# [1] "n males removed from 2018: 0"
-# [1] "n males removed from 2019: 2"
-# [1] "n males removed from 2020: 4"
-
-#rm(AGM)
-
-
-
 #~~~~~~~~~~~~~~~#
 #  Save dfs  ####
 #~~~~~~~~~~~~~~~#
@@ -232,9 +179,3 @@ for (i in 1:6) {
 all_AGP <- bind_rows(AGP_list)
 openxlsx::write.xlsx(all_AGP, 
                      here("Data", "Processed", "Maternity", "2017-20_m-p_mat.xlsx"))
-
-# Save list of males
-openxlsx::write.xlsx(AGM_gen, #%>% 
-                     # mutate(across(everything(), ~replace_na(.x, 0))),
-                     here("Data", "Processed", "Maternity", "2015-20_males_mat.xlsx"))
-
