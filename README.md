@@ -1,5 +1,5 @@
 # Inbreeding depression of birth mass, survival and growth in Antarctic fur seal pups
-Cited this repository: [![DOI](https://zenodo.org/badge/707605663.svg)](https://zenodo.org/doi/10.5281/zenodo.10886969)
+Cite this repository: [![DOI](https://zenodo.org/badge/707605663.svg)](https://zenodo.org/doi/10.5281/zenodo.10886969)
 
 This repository contains the scripts and files necessary to run the analysis done in the manuscript "Little evidence of inbreeding depression for birth mass, survival and growth in Antarctic fur seal pups". 
 
