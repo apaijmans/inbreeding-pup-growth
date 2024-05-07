@@ -9,7 +9,7 @@
 # and foraging trip duration, as well as a figure with the map of
 # South Georgia and Bird Island.
 #
-# Date: 2024-03-21
+# Date: 2024-05-07
 # -----------------------------------------------------------
 
 
@@ -120,7 +120,7 @@ plot.bi.color <- ggplot() +
 
 #### mapping study colonies ----
 # Adds box around study colonies on bird island map
-plot.bi.color. <- plot.bi.color +
+plot.bi.color.box <- plot.bi.color +
   annotate(geom = "rect", 
            xmin = -38.060, 
            xmax = -38.045, 
@@ -135,8 +135,8 @@ plot.bi.beaches.color <- ggplot() +
   geom_sf(data = bi_coast, fill = "#ADADAD") +  # "#eaeaea"
   geom_sf(data = fwb, fill = "#fa7876") + 
   geom_sf(data = ssb, fill = "#872ca2") +
-  theme(legend.position = "none") +
-  theme_void()
+  theme(legend.position = "none") #+
+  #theme_void() # this removes the axis labels
 
 # Add text
 plot.bi.beaches.color <- plot.bi.beaches.color + 
@@ -156,12 +156,21 @@ plot.bi.beaches.color <- plot.bi.beaches.color +
            y = -54.011,
            label = "SSB", 
            color = "#872ca2",
-           fontface = "bold")  #+
+           fontface = "bold")  +
+  scale_y_discrete(labels=c("", "54.012°S", "", "54.010°S", "", "" ,"")) + # removes last tick labels that otherwise interfere with the bigger map
+  scale_x_discrete(labels=c("38.058°W", "", "38.054°W", "", "38.050°W", "" ,"38.046W")) + # show every other tick label
+  theme(axis.title.x = element_blank(), # remove axis title
+        axis.title.y = element_blank(),
+        axis.text.x = element_text(angle = 20, hjust=1), # tilt x axis labels
+        panel.background = element_blank(),
+        axis.ticks.x = element_blank(), # remove ticks
+        axis.ticks.y = element_blank())
+        
 
 # Combine
 map <- ggdraw(p_a) + # empty canvas with title to match other plots
-  draw_plot(plot.bi.beaches.color, x= 0.07, scale = .8) + # study colonies
-  draw_plot(plot.bi.color., 0.07, .48, .5, .5, scale = 1.3) # Bird Iland
+  draw_plot(plot.bi.beaches.color, x = 0.06, y = -0.01, scale = .85) + # study colonies
+  draw_plot(plot.bi.color.box, 0.06, .48, .5, .5, scale = 1.3) # Bird Iland
 
 #map
 
@@ -177,6 +186,6 @@ P_seasonal
 
 ##---- chunk_end
 
-ggsave("Figs/F1_seasonal_data_map.jpg", P_seasonal, width = 7, height = 6, dpi = 300)
+ggsave("Figs/F1_seasonal_data_map_coord.jpg", P_seasonal, width = 7, height = 6, dpi = 300)
 
 
