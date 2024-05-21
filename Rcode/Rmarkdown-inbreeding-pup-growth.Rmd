@@ -41,7 +41,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ***
 
-This document contains all the `R code` used in the workflow for the manuscript *Little evidence for inbreeding depression for birth mass, survival and growth in Antarctic fur seal pups* by Anneke J. Paijmans, Ane Liv Berthelsen, Rebecca Nagel, Felicitas Cristaller, Nicole Kröcker, Jaume Forcada, and Joseph I. Hoffman. The R Markdown file and the raw data can all be downloaded via Zenodo, *LINK*. Additional scrips are available on Github, https://github.com/apaijmans/inbreeding-pup-growth/. Please, don't hesitate to contact me if you have any questions: a.paijmans[@]uni-bielefeld.de.
+This document contains all the `R code` used in the workflow for the manuscript *Little evidence of inbreeding depression for birth mass, survival and growth in Antarctic fur seal pups* by Anneke J. Paijmans, Ane Liv Berthelsen, Rebecca Nagel, Felicitas Christaller, Nicole Kröcker, Jaume Forcada, and Joseph I. Hoffman. The R Markdown file and the raw data can all be downloaded via Zenodo, https://zenodo.org/records/10854333. Additional scrips are available on Github, https://github.com/apaijmans/inbreeding-pup-growth/. Please, don't hesitate to contact me if you have any questions: a.paijmans[@]uni-bielefeld.de.
 
 ***
 
